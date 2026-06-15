@@ -1,56 +1,377 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MyLinks - Harley Pereyra</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Harley Pereyra Alvarado · MyLinks</title>
+<meta name="description" content="Enlaces de Harley Pereyra Alvarado — Ingeniero metalúrgico en transición a Desarrollo Web." />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
-        rel="stylesheet">
+<!-- Respaldo monoespaciado real (estética técnica). Carga ligera con display=swap -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
 
-    <link rel="stylesheet" href="styles.css" />
+<style>
+  /* ============================================================
+     SISTEMA DE DISEÑO — Custom Properties (fácil mantenimiento)
+     ============================================================ */
+  :root {
+    /* Paleta provista (estricta) */
+    --bg:          #404252;  /* fondo base slate-gray   */
+    --accent:      #5683e9;  /* realce / foco / bordes  */
+    --text:        #fcf6f8;  /* contraste alto          */
+    --card-accent: #c584c9;  /* acento secundario cards */
+
+    /* Superficies derivadas de la paleta (no inventan tono nuevo) */
+    --surface:     #494b5c;            /* chip de icono              */
+    --muted:       rgba(252, 246, 248, .60);
+    --border:      rgba(252, 246, 248, .10);
+
+    /* Efecto de elevación limpia (provisto) */
+    --shadow: 0px 10px 35px rgba(0, 0, 0, .35);
+
+    /* Tipografía: Kalmia primero, pila monoespaciada de respaldo */
+    --font: "Kalmia regular", "Space Mono", "Menlo", "Consolas", ui-monospace, monospace;
+
+    /* Ritmo */
+    --radius: 14px;
+    --maxw: 560px;
+  }
+
+  /* ============================================================
+     BASE / RESET
+     ============================================================ */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    font-family: var(--font);
+    color: var(--text);
+    background: var(--bg);
+    /* Profundidad mínima: un único halo de acento detrás del avatar */
+    background-image:
+      radial-gradient(120% 60% at 50% -10%, rgba(86,131,233,.18), transparent 60%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    line-height: 1.5;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: clamp(28px, 6vw, 64px) 20px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ============================================================
+     CONTENEDOR PRINCIPAL (columna centrada)
+     ============================================================ */
+  .card {
+    width: 100%;
+    max-width: var(--maxw);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  /* ----- ENCABEZADO ----- */
+  .header { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+
+  /* Avatar: monograma SVG técnico con anillo de acento */
+  .avatar {
+    width: 116px;
+    height: 116px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 35%, #515366, var(--surface));
+    border: 2px solid var(--border);
+    box-shadow: var(--shadow), inset 0 0 0 6px rgba(86,131,233,.10);
+    position: relative;
+  }
+  .avatar::after { /* anillo de acento punteado = textura técnica */
+    content: "";
+    position: absolute; inset: -7px;
+    border-radius: 50%;
+    border: 1.5px dashed rgba(86,131,233,.55);
+    opacity: .5;
+  }
+  /* La foto llena el círculo sin deformarse */
+  .avatar img {
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Eyebrow tipo terminal — elemento de firma */
+  .eyebrow {
+    font-size: .82rem;
+    color: var(--accent);
+    letter-spacing: .04em;
+    margin-top: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .eyebrow .dim { color: var(--muted); }
+  .caret {
+    width: 9px; height: 1.05em;
+    background: var(--accent);
+    display: inline-block;
+    margin-left: 2px;
+    animation: blink 1.1s steps(1) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .name {
+    font-size: clamp(1.55rem, 6vw, 2.1rem);
+    font-weight: 700;
+    letter-spacing: -.01em;
+  }
+
+  .role { font-size: .92rem; color: var(--muted); }
+  .role b { color: var(--text); font-weight: 700; }
+
+  .bio {
+    font-size: .9rem;
+    color: var(--muted);
+    line-height: 1.65;
+    max-width: 42ch;
+    margin: 6px auto 0;
+  }
+
+  /* ============================================================
+     TARJETAS DE ENLACES — estilo "blob slide" adaptado a la paleta
+     (referencia: Uiverse.io por Randdose, recoloreado a tu marca)
+     ============================================================ */
+  .links {
+    margin-top: 36px;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+
+  .link-card {
+    position: relative;
+    overflow: hidden;                /* recorta los blobs dentro del botón */
+    isolation: isolate;              /* contexto de apilamiento propio     */
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    text-align: left;
+    text-decoration: none;
+    color: var(--text);
+    background: transparent;
+    border: 0.14em solid var(--accent);   /* borde outline (como el snippet) */
+    border-radius: var(--radius);
+    padding: 13px 15px;
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 300ms, background 300ms,
+                color 300ms, box-shadow 300ms;
+  }
+
+  /* Contenido SIEMPRE por encima de los blobs */
+  .chip, .link-text, .arrow { position: relative; z-index: 1; }
+
+  /* Chip sólido: los iconos de marca siguen legibles sobre el relleno */
+  .chip {
+    flex: 0 0 auto;
+    width: 38px; height: 38px;
+    display: grid; place-items: center;
+    border-radius: 10px;
+    background: var(--surface);
+    box-shadow: inset 0 0 0 1px var(--border);
+  }
+  .chip svg { width: 21px; height: 21px; display: block; }
+
+  .link-text { display: flex; flex-direction: column; min-width: 0; }
+  .link-text .t { font-weight: 700; font-size: .98rem; line-height: 1.2; }
+  .link-text .s {
+    font-size: .72rem; color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .arrow {
+    margin-left: auto;
+    color: var(--accent);
+    transition: transform .3s ease, color .3s ease;
+    flex: 0 0 auto;
+  }
+
+  /* ---- Blobs deslizantes: ::before (izq) y ::after (der) ---- */
+  .link-card::before,
+  .link-card::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 12em;
+    aspect-ratio: 1;
+    margin-top: -6em;            /* centra el círculo en vertical */
+    border-radius: 50%;
+    opacity: .5;
+    z-index: 0;
+    transition: transform 500ms ease, background 300ms;
+  }
+  .link-card::before { left: 0;  background: var(--accent);      transform: translateX(-10em); }
+  .link-card::after  { right: 0; background: var(--card-accent); transform: translateX(10em); }
+
+  /* Hover / foco: entran los blobs + tinte de respaldo + elevación */
+  .link-card:hover,
+  .link-card:focus-visible {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    box-shadow: var(--shadow);
+    outline: none;
+  }
+  .link-card:hover::before,
+  .link-card:focus-visible::before { transform: translateX(-3em); }
+  .link-card:hover::after,
+  .link-card:focus-visible::after  { transform: translateX(3em); }
+  .link-card:hover .arrow,
+  .link-card:focus-visible .arrow  { transform: translateX(4px); color: var(--text); }
+
+  /* Foco accesible por teclado */
+  .link-card:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+
+  /* Active: los acentos pasan al tono secundario (como el "teal" original) */
+  .link-card:active { border-color: var(--card-accent); }
+  .link-card:active::before,
+  .link-card:active::after { background: var(--card-accent); }
+
+  /* ----- PIE ----- */
+  .footer {
+    margin-top: 30px;
+    font-size: .74rem;
+    color: var(--muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #25D366;
+    box-shadow: 0 0 0 3px rgba(37,211,102,.18);
+  }
+
+  /* ============================================================
+     ANIMACIÓN DE ENTRADA (CSS puro, escalonada)
+     ============================================================ */
+  .reveal { opacity: 0; transform: translateY(14px); animation: rise .5s ease forwards; }
+  .header   { animation-delay: .05s; }
+  .links > *:nth-child(1){ animation-delay:.10s } .links > *:nth-child(2){ animation-delay:.16s }
+  .links > *:nth-child(3){ animation-delay:.22s } .links > *:nth-child(4){ animation-delay:.28s }
+  .links > *:nth-child(5){ animation-delay:.34s } .links > *:nth-child(6){ animation-delay:.40s }
+  .footer   { animation-delay: .46s; }
+  @keyframes rise { to { opacity: 1; transform: translateY(0); } }
+
+  /* Respeta usuarios con movimiento reducido (sin deslizamiento de blobs) */
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; animation: none; }
+    .caret  { animation: none; }
+    .link-card, .arrow { transition: none; }
+    .link-card::before, .link-card::after { display: none; }
+    .link-card:hover, .link-card:focus-visible {
+      background: color-mix(in srgb, var(--accent) 22%, transparent);
+    }
+  }
+
+  /* ============================================================
+     RESPONSIVE — móvil a una columna
+     ============================================================ */
+  @media (max-width: 460px) {
+    .links { grid-template-columns: 1fr; }
+    .avatar { width: 100px; height: 100px; }
+  }
+</style>
 </head>
 
 <body>
+  <main class="card">
 
-    <main class="card">
+    <!-- ============ ENCABEZADO ============ -->
+    <header class="header reveal">
+      <!-- Avatar: foto de perfil dentro del marco circular con anillo de acento -->
+      <div class="avatar">
+        <img src="jocker.avif" alt="Foto de Harley Pereyra Alvarado" width="116" height="116" />
+      </div>
 
-        <!-- FOTO DE PERFIL -->
-        <!-- Cambia "Tu Nombre" en el atributo alt -->
-        <img class="avatar" src="https://placehold.co/100x100/6c63ff/ffffff?text=YO" alt="Foto de Tu Nombre" width="100"
-            height="100" />
+      <!-- Firma tipo terminal -->
+      <p class="eyebrow"><span class="dim">$</span> whoami<span class="caret" aria-hidden="true"></span></p>
 
-        <!-- NOMBRE Y BIO -->
-        <!-- Reemplaza el texto con tu información -->
-        <h1 class="name">Harley Pereyra</h1>
-        <p class="bio">Soy un estudiante de desarrollo web en enter.</p>
+      <h1 class="name">Harley Pereyra Alvarado</h1>
 
+      <p class="role">Ingeniero metalúrgico <b>→</b> Desarrollo Web</p>
 
-        <!-- ENLACES -->
-        <!-- Cambia el href y el texto de cada enlace -->
-        <!-- Puedes agregar o quitar enlaces según necesites como FACEBOOK,WHATTSAP,etc cualquier medio de contacto -->
-        <nav class="links">
+      <p class="bio">
+        Experiencia en gestión de proyectos y formación tecnológica en el sector
+        minero-educativo. Actualmente estudiando Desarrollo Web en Enter Tech School.
+      </p>
+    </header>
 
-            <a href="https://github.com/harley-p" class="link" target="_blank">
-                GitHub
-            </a>
+    <!-- ============ ENLACES ============ -->
+    <nav class="links" aria-label="Enlaces de perfil">
 
-            <a href="mailto:haley.p.hp@email.com" class="link">
-                Email
-            </a>
-            <a href="https://www.facebook.com/harley.pereyraalvarado/" class="link" target="_blank">
-                FACEBOOK
-            </a>
+      <!-- CONFIGURAR: pega aquí tu URL de LinkedIn -->
+      <a class="link-card reveal" href="#" aria-label="LinkedIn — perfil profesional">
+        <span class="chip" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.22.79 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+        </span>
+        <span class="link-text"><span class="t">LinkedIn</span><span class="s">Perfil profesional</span></span>
+        <span class="arrow" aria-hidden="true">↗</span>
+      </a>
 
+      <a class="link-card reveal" href="https://www.instagram.com/harley_pereyra/?hl=es" target="_blank" rel="noopener noreferrer" aria-label="Instagram — abre en una pestaña nueva">
+        <span class="chip" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="#E4405F"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16zM12 0C8.74 0 8.33.01 7.05.07 5.78.13 4.9.33 4.14.63c-.79.3-1.46.72-2.12 1.38A5.86 5.86 0 0 0 .63 4.14c-.3.76-.5 1.64-.56 2.91C.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.06 1.27.26 2.15.56 2.91.3.79.72 1.46 1.38 2.12.66.66 1.33 1.08 2.12 1.38.76.3 1.64.5 2.91.56C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07c1.27-.06 2.15-.26 2.91-.56a5.86 5.86 0 0 0 2.12-1.38 5.86 5.86 0 0 0 1.38-2.12c.3-.76.5-1.64.56-2.91.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.06-1.27-.26-2.15-.56-2.91a5.86 5.86 0 0 0-1.38-2.12A5.86 5.86 0 0 0 19.86.63c-.76-.3-1.64-.5-2.91-.56C15.67.01 15.26 0 12 0zm0 5.84A6.16 6.16 0 1 0 18.16 12 6.16 6.16 0 0 0 12 5.84zM12 16a4 4 0 1 1 4-4 4 4 0 0 1-4 4zm6.41-10.85a1.44 1.44 0 1 0 1.44 1.44 1.44 1.44 0 0 0-1.44-1.44z"/></svg>
+        </span>
+        <span class="link-text"><span class="t">Instagram</span><span class="s">@harley_pereyra</span></span>
+        <span class="arrow" aria-hidden="true">↗</span>
+      </a>
 
-        </nav>
+      <a class="link-card reveal" href="https://www.facebook.com/harley.pereyraalvarado/" target="_blank" rel="noopener noreferrer" aria-label="Facebook — abre en una pestaña nueva">
+        <span class="chip" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.69.24 2.69.24v2.97h-1.52c-1.49 0-1.96.93-1.96 1.89v2.25h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z"/></svg>
+        </span>
+        <span class="link-text"><span class="t">Facebook</span><span class="s">/harley.pereyraalvarado</span></span>
+        <span class="arrow" aria-hidden="true">↗</span>
+      </a>
 
-    </main>
+      <a class="link-card reveal" href="https://github.com/harley-p" target="_blank" rel="noopener noreferrer" aria-label="GitHub — abre en una pestaña nueva">
+        <span class="chip" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="#fcf6f8"><path d="M12 .5C5.37.5 0 5.87 0 12.5c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.84 2.81 1.31 3.5 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6.01 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.25 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.62-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.21.7.82.58A12 12 0 0 0 24 12.5C24 5.87 18.63.5 12 .5z"/></svg>
+        </span>
+        <span class="link-text"><span class="t">GitHub</span><span class="s">github.com/harley-p</span></span>
+        <span class="arrow" aria-hidden="true">↗</span>
+      </a>
 
+      <!-- CONFIGURAR: pega aquí tu enlace de WhatsApp (formato https://wa.me/51XXXXXXXXX) -->
+      <a class="link-card reveal" href="#" aria-label="WhatsApp — contacto directo">
+        <span class="chip" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="#25D366"><path d="M.06 24l1.69-6.16a11.87 11.87 0 0 1-1.6-5.96C.15 5.31 5.5 0 12.06 0a11.8 11.8 0 0 1 8.41 3.49 11.8 11.8 0 0 1 3.48 8.42c0 6.55-5.34 11.89-11.89 11.89a11.9 11.9 0 0 1-5.69-1.45L.06 24zM6.6 20.2c1.67.99 3.27 1.58 5.4 1.58 5.45 0 9.88-4.43 9.88-9.88 0-2.64-1.03-5.12-2.9-6.99a9.82 9.82 0 0 0-6.98-2.9c-5.45 0-9.88 4.43-9.88 9.88 0 1.87.52 3.27 1.4 4.73l-.99 3.62 3.07-.04zm11.39-5.55c-.07-.12-.27-.2-.57-.35-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51l-.57-.01c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48 0 1.46 1.06 2.88 1.21 3.08.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.62.71.23 1.36.2 1.87.12.57-.08 1.76-.72 2-1.41.25-.7.25-1.29.17-1.42z"/></svg>
+        </span>
+        <span class="link-text"><span class="t">WhatsApp</span><span class="s">Contacto directo</span></span>
+        <span class="arrow" aria-hidden="true">↗</span>
+      </a>
+
+      <!-- CONFIGURAR: pega aquí la URL de tu portafolio -->
+      <a class="link-card reveal" href="#" aria-label="Portafolio — proyectos y demos">
+        <span class="chip" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#5683e9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        </span>
+        <span class="link-text"><span class="t">Portafolio</span><span class="s">Proyectos &amp; demos</span></span>
+        <span class="arrow" aria-hidden="true">↗</span>
+      </a>
+
+    </nav>
+
+    <!-- ============ PIE ============ -->
+    <footer class="footer reveal">
+      <span class="status-dot" aria-hidden="true"></span>
+      Disponible para proyectos · Arequipa, Perú
+    </footer>
+
+  </main>
 </body>
-
 </html>
